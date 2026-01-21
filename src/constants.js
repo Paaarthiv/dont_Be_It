@@ -15,12 +15,9 @@ export const COLORS = {
     UI_BORDER: '#666666'  // UI: Pencil Gray
 };
 
-// Wobble Configuration (The "Line Boiling" Rule)
-export const WOBBLE = {
-    SEGMENT_LENGTH: 15,   // Distance between wobble points
-    JITTER_AMOUNT: 3,     // Max offset in pixels
-    SPEED: 10             // Wobble speed factor
-};
+// Wobble Configuration - Re-exported from unified wobble system
+// Import WOBBLE_CONFIG from './utils/wobble.js' for the full config
+export { WOBBLE_CONFIG as WOBBLE } from './utils/wobble.js';
 
 // Game Configuration
 export const GAME = {

@@ -15,6 +15,12 @@
   /* Fonts */
   --font-title: 'Permanent Marker', cursive;
   --font-text: 'Gochi Hand', cursive;
+
+  /* WOBBLE SYSTEM - Single source of truth */
+  --wobble-rotation: 3deg;
+  --wobble-scale: 0.02;
+  --wobble-offset: 2px;
+  --wobble-speed: 0.15s;
 }
 
 * {
@@ -482,6 +488,62 @@ body {
   60% {
     transform: translate(-50%, -50%) translate3d(6px, 0, 0);
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   WOBBLE SYSTEM - Global hand-drawn jitter animations
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Subtle continuous wobble - use for sticky notes, paper scraps */
+.wobble {
+  animation: wobbleAnim 0.3s ease-in-out infinite alternate;
+}
+
+.wobble-slow {
+  animation: wobbleAnim 0.5s ease-in-out infinite alternate;
+}
+
+.wobble-fast {
+  animation: wobbleAnim 0.15s ease-in-out infinite alternate;
+}
+
+@keyframes wobbleAnim {
+  0% {
+    transform:
+      rotate(calc(-1 * var(--wobble-rotation))) scale(calc(1 - var(--wobble-scale))) translate(calc(-1 * var(--wobble-offset)), var(--wobble-offset));
+  }
+
+  100% {
+    transform:
+      rotate(var(--wobble-rotation)) scale(calc(1 + var(--wobble-scale))) translate(var(--wobble-offset), calc(-1 * var(--wobble-offset)));
+  }
+}
+
+/* Wobble with preserved transforms (for centered elements) */
+.wobble-centered {
+  animation: wobbleCenteredAnim 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes wobbleCenteredAnim {
+  0% {
+    transform:
+      translate(-50%, -50%) rotate(calc(-1 * var(--wobble-rotation))) scale(calc(1 - var(--wobble-scale)));
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%) rotate(var(--wobble-rotation)) scale(calc(1 + var(--wobble-scale)));
+  }
+}
+
+/* Apply wobble to paper objects */
+.timer-container,
+.loserboard-container,
+.controls-hint,
+.result-modal,
+.results-modal,
+.alert-text {
+  animation: wobbleAnim 0.4s ease-in-out infinite alternate;
 }
 
 /* Responsive */
