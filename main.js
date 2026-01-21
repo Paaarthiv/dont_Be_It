@@ -9,6 +9,7 @@ import { Landing } from './src/ui/Landing.js';
 import { HUD } from './src/ui/HUD.js';
 import { Alerts } from './src/ui/Alerts.js';
 import { Results } from './src/ui/Results.js';
+import { DoodlePad } from './src/ui/DoodlePad.js';
 import { GAME } from './src/constants.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,6 +21,9 @@ let landing = null;
 let hud = null;
 let alerts = null;
 let results = null;
+let doodlePad = null;
+
+let pendingPlayerName = null;
 
 const waitingScreen = document.getElementById('waitingScreen');
 const currentPlayersEl = document.getElementById('currentPlayers');
@@ -33,6 +37,7 @@ async function init() {
     hud = new HUD();
     alerts = new Alerts();
     results = new Results();
+    doodlePad = new DoodlePad();
 
     // Initialize multiplayer
     multiplayer = new Multiplayer();
@@ -43,6 +48,7 @@ async function init() {
 
     // Wire up UI handlers
     setupLandingHandlers();
+    setupDoodleHandlers();
     setupGameHandlers();
     setupMultiplayerHandlers();
     setupResultsHandlers();
@@ -58,15 +64,27 @@ async function init() {
 // ─────────────────────────────────────────────────────────────────────────────
 function setupLandingHandlers() {
     landing.onPlay = async (name) => {
+        // Store name and show doodle pad
+        pendingPlayerName = name;
+        landing.hide();
+        doodlePad.show();
+    };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOODLE PAD HANDLERS
+// ─────────────────────────────────────────────────────────────────────────────
+function setupDoodleHandlers() {
+    doodlePad.onComplete = async (textureDataUrl) => {
         try {
-            // Join the multiplayer session
-            const playerId = await multiplayer.join(name);
+            // Join the multiplayer session with custom sprite
+            const playerId = await multiplayer.join(pendingPlayerName);
 
-            // Add local player to game
-            game.addLocalPlayer(playerId, name);
+            // Add local player to game with custom sprite
+            game.addLocalPlayer(playerId, pendingPlayerName, textureDataUrl);
 
-            // Hide landing, show waiting
-            landing.hide();
+            // Hide doodle, show waiting
+            doodlePad.hide();
             showWaiting();
             hud.show();
 
@@ -75,6 +93,7 @@ function setupLandingHandlers() {
         } catch (error) {
             console.error('Failed to join:', error);
             alert('Failed to join game. Please try again.');
+            landing.show();
         }
     };
 }

@@ -179,6 +179,152 @@ body {
   transform: scale(0.95);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   DOODLE PAD - "Draw Your Character" Screen
+   ───────────────────────────────────────────────────────────────────────────── */
+
+#doodlePad {
+  background: var(--bg-color);
+  z-index: 25;
+  pointer-events: auto;
+}
+
+.doodle-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.doodle-title {
+  font-family: var(--font-title);
+  font-size: 3rem;
+  color: var(--text-main);
+  margin: 0;
+  transform: rotate(-2deg);
+}
+
+.doodle-subtitle {
+  font-family: var(--font-text);
+  font-size: 1.2rem;
+  color: var(--ui-border);
+  margin: 0;
+}
+
+.doodle-timer {
+  font-family: var(--font-title);
+  font-size: 4rem;
+  color: var(--danger-color);
+  background: var(--accent-color);
+  padding: 5px 25px;
+  border-radius: 5px;
+  transform: rotate(2deg);
+  animation: timerPulse 1s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+
+  0%,
+  100% {
+    transform: rotate(2deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(2deg) scale(1.05);
+  }
+}
+
+.doodle-canvas-wrapper {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border: 2px dashed var(--ui-border);
+  transform: rotate(-1deg);
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tape effect on top */
+.doodle-canvas-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(2deg);
+  width: 80px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#doodleCanvas {
+  display: block;
+  cursor: crosshair;
+  border-radius: 50%;
+}
+
+.doodle-boundary {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
+  border: 3px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.doodle-tools {
+  display: flex;
+  gap: 10px;
+}
+
+.tool-btn {
+  font-family: var(--font-text);
+  font-size: 1rem;
+  padding: 8px 15px;
+  background: #fff;
+  border: 2px solid var(--ui-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.tool-btn:hover {
+  transform: scale(1.05);
+}
+
+.tool-btn.active {
+  background: var(--accent-color);
+  border-color: var(--text-main);
+  transform: rotate(-2deg);
+}
+
+.tool-btn[data-tool="pen"].active {
+  border-color: var(--safe-color);
+}
+
+.tool-btn[data-tool="crayon"].active {
+  border-color: var(--danger-color);
+}
+
+.doodle-strokes {
+  font-family: var(--font-text);
+  font-size: 1rem;
+  color: var(--ui-border);
+}
+
+.doodle-done-btn {
+  margin-top: 10px;
+}
+
+.doodle-done-btn.locked {
+  background: var(--accent-color);
+  color: var(--text-main);
+  border-color: var(--text-main);
+  animation: wobbleAnim 0.3s ease-in-out infinite alternate;
+}
+
 /* ERROR MESSAGE */
 .error-msg,
 .input-error {

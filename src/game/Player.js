@@ -7,7 +7,7 @@ import { COLORS, GAME, TRAIL } from '../constants.js';
 import { drawWobblyCircle, drawScribble, drawWobblyText } from './renderUtils.js';
 
 export class Player {
-    constructor(id, name, x, y, isLocal = false) {
+    constructor(id, name, x, y, isLocal = false, spriteDataUrl = null) {
         this.id = id;
         this.name = name;
         this.x = x;
@@ -34,6 +34,23 @@ export class Player {
         this.targetX = x;
         this.targetY = y;
         this.interpolationSpeed = 10; // Higher = faster catch up
+
+        // Custom sprite (player's doodle)
+        this.sprite = null;
+        this.spriteDataUrl = spriteDataUrl;
+        if (spriteDataUrl) {
+            this.loadSprite(spriteDataUrl);
+        }
+    }
+
+    loadSprite(dataUrl) {
+        this.sprite = new Image();
+        this.sprite.src = dataUrl;
+    }
+
+    setSprite(dataUrl) {
+        this.spriteDataUrl = dataUrl;
+        this.loadSprite(dataUrl);
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -219,8 +236,11 @@ export class Player {
         }
 
         // 2. Draw Player Body
-        if (this.isIt) {
-            // IT PLAYER: Red Crayon Scribble
+        if (this.sprite && this.sprite.complete) {
+            // Use custom sprite (player's doodle)
+            this.renderCustomSprite(ctx, time);
+        } else if (this.isIt) {
+            // IT PLAYER: Red Crayon Scribble (fallback)
             drawScribble(ctx, this.x, this.y, GAME.PLAYER_RADIUS, COLORS.DANGER, time);
 
             // Heavy outline
@@ -260,7 +280,7 @@ export class Player {
             ctx.stroke();
 
         } else {
-            // SAFE PLAYER: Blue Ballpoint
+            // SAFE PLAYER: Blue Ballpoint (fallback)
             drawWobblyCircle(
                 ctx,
                 this.x,
@@ -349,6 +369,61 @@ export class Player {
                 ctx.restore();
             }
         }
+    }
+
+    renderCustomSprite(ctx, time) {
+        const size = GAME.PLAYER_RADIUS * 2;
+
+        ctx.save();
+
+        // Apply wobble transform
+        const wobble = Math.sin(time * 3) * 0.03;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(wobble);
+
+        // Draw the custom sprite
+        ctx.drawImage(
+            this.sprite,
+            -GAME.PLAYER_RADIUS,
+            -GAME.PLAYER_RADIUS,
+            size,
+            size
+        );
+
+        // If IT: Add red chaos overlay
+        if (this.isIt) {
+            // Red tint overlay
+            ctx.globalCompositeOperation = 'source-atop';
+            ctx.fillStyle = 'rgba(217, 43, 43, 0.3)';
+            ctx.beginPath();
+            ctx.arc(0, 0, GAME.PLAYER_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Angry scribble aura
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + time * 2;
+                const dist = GAME.PLAYER_RADIUS + 5 + Math.sin(time * 5 + i) * 3;
+                const x = Math.cos(angle) * dist;
+                const y = Math.sin(angle) * dist;
+
+                ctx.strokeStyle = COLORS.DANGER;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x - 3, y - 3);
+                ctx.lineTo(x + 3, y + 3);
+                ctx.stroke();
+            }
+
+            // Red crayon border
+            drawWobblyCircle(ctx, 0, 0, GAME.PLAYER_RADIUS + 2, COLORS.DANGER, 3, time);
+        } else {
+            // Safe player: Blue outline
+            drawWobblyCircle(ctx, 0, 0, GAME.PLAYER_RADIUS, COLORS.SAFE, 2, time);
+        }
+
+        ctx.restore();
     }
 
     hexToRgba(hex, alpha) {

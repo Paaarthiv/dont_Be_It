@@ -73,14 +73,15 @@ export class Game {
     // ─────────────────────────────────────────────────────────────────────────────
     // PLAYER MANAGEMENT
     // ─────────────────────────────────────────────────────────────────────────────
-    addLocalPlayer(id, name) {
+    addLocalPlayer(id, name, spriteDataUrl = null) {
         const center = this.arena.getCenter();
         const player = new Player(
             id,
             name,
             center.x + (Math.random() - 0.5) * 100,
             center.y + (Math.random() - 0.5) * 100,
-            true
+            true,
+            spriteDataUrl
         );
         this.localPlayer = player;
         this.players.set(id, player);
@@ -88,10 +89,10 @@ export class Game {
         return player;
     }
 
-    addRemotePlayer(id, name, x, y) {
+    addRemotePlayer(id, name, x, y, spriteDataUrl = null) {
         if (this.players.has(id)) return this.players.get(id);
 
-        const player = new Player(id, name, x, y, false);
+        const player = new Player(id, name, x, y, false, spriteDataUrl);
         this.players.set(id, player);
         this.notifyPlayerCountChange();
         return player;
