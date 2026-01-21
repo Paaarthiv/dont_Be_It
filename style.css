@@ -1,0 +1,426 @@
+@import url('https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Permanent+Marker&display=swap');
+
+:root {
+  /* Notebook Palette */
+  --bg-color: #F4F1EA;
+  --grid-color: rgba(50, 50, 50, 0.05);
+  /* Very faint */
+  --safe-color: #0044CC;
+  --danger-color: #D92B2B;
+  --accent-color: #FFF000;
+  --boundary-color: #333333;
+  --text-main: #111111;
+  --ui-border: #666666;
+
+  /* Fonts */
+  --font-title: 'Permanent Marker', cursive;
+  --font-text: 'Gochi Hand', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  /* Simple vignette for depth */
+  background-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
+  color: var(--text-main);
+  font-family: var(--font-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+#gameCanvas {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UI OVERLAYS (The "Paper Objects")
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  /* Let clicks pass through for game */
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+  display: none !important;
+}
+
+/* LANDING SCREEN (Notebook Cover) */
+#landing {
+  background: #F4F1EA;
+  /* Fully opaque to hide canvas */
+  flex-direction: column;
+  pointer-events: auto;
+  z-index: 20;
+}
+
+.title-container {
+  margin-bottom: 2rem;
+  /* Slight constant rotation for "hand-placed" feel */
+  transform: rotate(-2deg);
+  text-align: center;
+}
+
+.title-main {
+  font-family: var(--font-title);
+  font-size: 5rem;
+  color: var(--text-main);
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  letter-spacing: -2px;
+}
+
+.tagline {
+  font-family: var(--font-text);
+  font-size: 1.5rem;
+  color: var(--danger-color);
+  /* Red crayon */
+  transform: rotate(-3deg);
+  opacity: 0.9;
+  margin-top: 10px;
+}
+
+/* INPUT & BUTTONS (Taped scraps & Stamps) */
+.input-group {
+  position: relative;
+  margin-bottom: 2rem;
+  transform: rotate(1deg);
+  text-align: center;
+}
+
+/* Taped Paper Look for Input */
+#playerName {
+  background: #fff;
+  border: 2px solid var(--ui-border);
+  color: var(--text-main);
+  font-family: var(--font-text);
+  font-size: 2rem;
+  text-align: center;
+  padding: 1rem 2rem;
+  width: 300px;
+  outline: none;
+  /* Rough edges */
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+  /* Allow typing */
+  user-select: text;
+  -webkit-user-select: text;
+  pointer-events: auto;
+  cursor: text;
+}
+
+/* The "Tape" visual */
+.input-group::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 100px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Play Button = Ink Stamp */
+.btn-primary,
+.play-btn {
+  background: transparent;
+  color: var(--safe-color);
+  font-family: var(--font-title);
+  font-size: 2rem;
+  border: 3px solid var(--safe-color);
+  border-radius: 8px;
+  padding: 0.5rem 2rem;
+  cursor: pointer;
+  transform: rotate(-2deg);
+  transition: all 0.1s ease;
+  pointer-events: auto;
+}
+
+.btn-primary:hover {
+  transform: rotate(-1deg) scale(1.05);
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* ERROR MESSAGE */
+.error-msg,
+.input-error {
+  color: var(--danger-color);
+  font-family: var(--font-title);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  display: none;
+  /* Hidden by default */
+  transform: rotate(2deg);
+  text-align: center;
+}
+
+.input-error.visible {
+  display: block;
+}
+
+/* HUD (Sticky Notes) */
+#hud {
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.timer-container {
+  /* Sticky Note Look */
+  background: var(--accent-color);
+  padding: 15px 25px;
+  color: var(--text-main);
+  font-family: var(--font-title);
+  font-size: 3rem;
+  transform: rotate(-2deg);
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+  /* Curled Corner effect bottom-right */
+  clip-path: polygon(0% 0%,
+      100% 0%,
+      100% 85%,
+      85% 100%,
+      0% 100%);
+  line-height: 1;
+}
+
+.timer-label {
+  font-family: var(--font-text);
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 5px;
+  border-bottom: 1px dashed var(--text-main);
+}
+
+/* LOSERBOARD (Torn Scrap) */
+.loserboard-container {
+  background: #fff;
+  border: 1px dashed var(--ui-border);
+  /* Torn edge look */
+  padding: 15px;
+  min-width: 250px;
+  transform: rotate(2deg);
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Tape on top */
+.loserboard-container::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(3deg);
+  width: 60px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(2px);
+}
+
+.loserboard-header {
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  color: var(--ui-border);
+  /* Pencil title */
+  border-bottom: 2px solid var(--ui-border);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* List Items */
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  /* Lined paper lines */
+}
+
+.player-row.is-it {
+  color: var(--danger-color);
+  font-weight: bold;
+  /* Crazy circle around name */
+  border: 2px solid var(--danger-color);
+  border-radius: 50% 20% / 10% 40%;
+  padding: 2px 10px;
+  transform: rotate(-1deg);
+  margin: 5px -5px;
+  /* Offset for the border size */
+}
+
+.player-row.top-loser::after {
+  content: '☠️';
+  /* Simplest handwritten skull approximation via emoji for now */
+  margin-left: 5px;
+}
+
+/* ALERTS ("POOF!" Bubble) */
+#alerts {
+  pointer-events: none;
+  z-index: 50;
+}
+
+.tag-alert {
+  font-family: var(--font-title);
+  font-size: 6rem;
+  color: var(--text-main);
+  background: #fff;
+  padding: 2rem 4rem;
+  border: 5px solid var(--text-main);
+  /* Speech bubble shape */
+  border-radius: 50%;
+  transform: rotate(-5deg);
+  box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
+
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0) rotate(180deg);
+  }
+
+  to {
+    transform: scale(1) rotate(-5deg);
+  }
+}
+
+/* RESULTS SCREEN (Graded Paper) */
+.results-modal {
+  background: #fff;
+  padding: 3rem;
+  width: 500px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transform: rotate(1deg);
+  position: relative;
+  /* Notebook paper lines */
+  background-image: repeating-linear-gradient(white, white 29px, #aad 30px);
+  pointer-events: auto;
+}
+
+.results-title {
+  font-family: var(--font-title);
+  font-size: 2rem;
+  color: var(--ui-border);
+  margin-bottom: 2rem;
+}
+
+.winner-name {
+  font-family: var(--font-title);
+  font-size: 5rem;
+  color: var(--danger-color);
+  transform: rotate(-10deg);
+  margin-bottom: 1rem;
+  /* Stamp Border */
+  border: 5px solid var(--danger-color);
+  display: inline-block;
+  padding: 0.5rem 2rem;
+  border-radius: 5px;
+  mask-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'><filter id='noise'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23noise)' opacity='0.5'/><rect width='100%' height='100%' fill='black'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'><filter id='noise'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23noise)' opacity='0.5'/><rect width='100%' height='100%' fill='black'/></svg>");
+}
+
+.stats-container {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.8);
+  /* Readability */
+}
+
+/* WAITING SCREEN */
+.waiting-count {
+  font-size: 3rem;
+  color: var(--safe-color);
+}
+
+.waiting-dots span {
+  font-size: 5rem;
+  display: inline-block;
+  animation: dotWiggle 1s infinite alternate;
+}
+
+@keyframes dotWiggle {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+/* Utility Animations */
+.shake {
+  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+@keyframes shake {
+
+  10%,
+  90% {
+    transform: translate(-50%, -50%) translate3d(-2px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate(-50%, -50%) translate3d(4px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate(-50%, -50%) translate3d(-6px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate(-50%, -50%) translate3d(6px, 0, 0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .title-main {
+    font-size: 3rem;
+  }
+
+  .timer-container {
+    font-size: 2rem;
+  }
+}
