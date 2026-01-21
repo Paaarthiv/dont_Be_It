@@ -29,7 +29,7 @@ export class Game {
         // Game state
         this.state = 'waiting'; // 'waiting' | 'playing' | 'ended'
         this.itPlayerId = null;
-        this.roundTimeRemaining = GAME.ROUND_DURATION;
+        this.roundEndTime = 0; // Absolute timestamp when round ends
         this.totalRoundTime = GAME.ROUND_DURATION;
 
         // Effects state
@@ -124,7 +124,8 @@ export class Game {
         if (this.players.size < GAME.MIN_PLAYERS) return false;
 
         this.state = 'playing';
-        this.roundTimeRemaining = GAME.ROUND_DURATION;
+        // Use absolute wall-clock time so timer works correctly in background tabs
+        this.roundEndTime = Date.now() + (GAME.ROUND_DURATION * 1000);
         this.arena.radius = GAME.ARENA_INITIAL_RADIUS;
 
         // Reset all players
@@ -189,7 +190,7 @@ export class Game {
 
     resetGame() {
         this.state = 'waiting';
-        this.roundTimeRemaining = GAME.ROUND_DURATION;
+        this.roundEndTime = 0;
         this.arena.radius = GAME.ARENA_INITIAL_RADIUS;
         this.itPlayerId = null;
 
@@ -263,16 +264,18 @@ export class Game {
     update(deltaTime) {
         if (this.state !== 'playing') return;
 
-        // Update round timer
-        this.roundTimeRemaining -= deltaTime;
-        if (this.roundTimeRemaining <= 0) {
-            this.roundTimeRemaining = 0;
+        // Calculate remaining time from absolute wall-clock time
+        // This ensures timer stays synced even when tab is in background
+        const remainingMs = this.roundEndTime - Date.now();
+        const roundTimeRemaining = Math.max(0, remainingMs / 1000);
+
+        if (roundTimeRemaining <= 0) {
             this.endRound();
             return;
         }
 
         // Update arena shrinking
-        this.arena.update(deltaTime, this.roundTimeRemaining, this.totalRoundTime);
+        this.arena.update(deltaTime, roundTimeRemaining, this.totalRoundTime);
 
         // Check for boost input (local player only)
         if (this.localPlayer && this.input.consumeBoostPress()) {
@@ -526,7 +529,9 @@ export class Game {
     // GETTERS
     // ─────────────────────────────────────────────────────────────────────────────
     getTimeRemaining() {
-        return this.roundTimeRemaining;
+        if (this.state !== 'playing') return GAME.ROUND_DURATION;
+        const remainingMs = this.roundEndTime - Date.now();
+        return Math.max(0, remainingMs / 1000);
     }
 
     getLeaderboard() {
