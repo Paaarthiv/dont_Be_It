@@ -81,20 +81,23 @@ export class Arena {
         ctx.strokeStyle = COLORS.GRID;
         ctx.lineWidth = 1;
         ctx.globalAlpha = GRID.OPACITY;
+        ctx.lineCap = 'round';
+
+        const jitter = () => (Math.random() - 0.5) * 2; // ±1 pixel jitter
 
         // Vertical lines (Rule lines)
         for (let x = 0; x <= this.width; x += GRID.SIZE) {
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.height);
+            ctx.moveTo(x + jitter(), jitter());
+            ctx.lineTo(x + jitter(), this.height + jitter());
             ctx.stroke();
         }
 
         // Horizontal lines
         for (let y = 0; y <= this.height; y += GRID.SIZE) {
             ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(this.width, y);
+            ctx.moveTo(jitter(), y + jitter());
+            ctx.lineTo(this.width + jitter(), y + jitter());
             ctx.stroke();
         }
 

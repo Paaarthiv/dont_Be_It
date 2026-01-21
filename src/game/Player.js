@@ -233,9 +233,34 @@ export class Player {
                 3,
                 time
             );
+
+            // ANGRY FACE (>_<)
+            ctx.strokeStyle = COLORS.TEXT;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+
+            // Left angry eyebrow \
+            ctx.beginPath();
+            ctx.moveTo(this.x - 8, this.y - 6);
+            ctx.lineTo(this.x - 3, this.y - 2);
+            ctx.stroke();
+
+            // Right angry eyebrow /
+            ctx.beginPath();
+            ctx.moveTo(this.x + 8, this.y - 6);
+            ctx.lineTo(this.x + 3, this.y - 2);
+            ctx.stroke();
+
+            // Angry mouth (zigzag frown)
+            ctx.beginPath();
+            ctx.moveTo(this.x - 6, this.y + 6);
+            ctx.lineTo(this.x - 2, this.y + 8);
+            ctx.lineTo(this.x + 2, this.y + 6);
+            ctx.lineTo(this.x + 6, this.y + 8);
+            ctx.stroke();
+
         } else {
             // SAFE PLAYER: Blue Ballpoint
-            // Just an outline, maybe 2 loops
             drawWobblyCircle(
                 ctx,
                 this.x,
@@ -246,15 +271,29 @@ export class Player {
                 time
             );
 
-            // Maybe a smiley face or simple mark inside?
-            // Simple center dot
-            ctx.beginPath();
+            // SMILEY FACE :)
             ctx.fillStyle = COLORS.SAFE;
-            ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+
+            // Left eye
+            ctx.beginPath();
+            ctx.arc(this.x - 6, this.y - 4, 2, 0, Math.PI * 2);
             ctx.fill();
+
+            // Right eye
+            ctx.beginPath();
+            ctx.arc(this.x + 6, this.y - 4, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Smile arc
+            ctx.strokeStyle = COLORS.SAFE;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y + 2, 7, 0.2, Math.PI - 0.2);
+            ctx.stroke();
         }
 
-        // 3. Draw Boost Bar (IT only)
+        // 3. Draw Boost Bar (IT only) - Wobbly pencil style
         if (this.isIt) {
             this.renderBoostBar(ctx, alpha, time);
         }
@@ -279,22 +318,35 @@ export class Player {
         const barWidth = 40;
         const barHeight = 6;
         const energyPercent = this.energy / GAME.MAX_ENERGY;
+        const x = this.x - barWidth / 2;
 
-        // Background (Pencil outline)
+        // Wobbly pencil outline (hand-drawn rectangle)
         ctx.strokeStyle = this.hexToRgba(COLORS.UI_BORDER, alpha);
         ctx.lineWidth = 1;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        // Rough rectangle
-        ctx.rect(this.x - barWidth / 2, barY, barWidth, barHeight);
+
+        // Top line with jitter
+        const j1 = Math.sin(time * 5) * 1;
+        const j2 = Math.cos(time * 5) * 1;
+        ctx.moveTo(x + j1, barY + j2);
+        ctx.lineTo(x + barWidth - j1, barY - j2);
+        ctx.lineTo(x + barWidth + j2, barY + barHeight + j1);
+        ctx.lineTo(x - j2, barY + barHeight - j1);
+        ctx.closePath();
         ctx.stroke();
 
-        // Fill (Highlighter Yellow)
+        // Fill (Highlighter Yellow) with messy edges
         if (energyPercent > 0) {
             ctx.fillStyle = this.hexToRgba(COLORS.ACCENT, alpha * 0.8);
-            // Messy fill
             const fillWidth = Math.max(0, barWidth * energyPercent - 2);
             if (fillWidth > 0) {
-                ctx.fillRect(this.x - barWidth / 2 + 1, barY + 1, fillWidth, barHeight - 2);
+                // Slightly offset/rotated fill for messy look
+                ctx.save();
+                ctx.translate(this.x, barY + barHeight / 2);
+                ctx.rotate(Math.sin(time * 3) * 0.02);
+                ctx.fillRect(-barWidth / 2 + 1, -barHeight / 2 + 1, fillWidth, barHeight - 2);
+                ctx.restore();
             }
         }
     }
