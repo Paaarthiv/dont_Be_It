@@ -24,9 +24,9 @@ const DOODLE_CONFIG = {
         },
         pencil: {
             name: 'Pencil',
-            color: '#555555',
-            lineWidth: 2,
-            opacity: 0.7
+            color: '#222222',  // Darker pencil for visibility
+            lineWidth: 3,      // Slightly thicker
+            opacity: 0.9       // More opaque
         },
         crayon: {
             name: 'Red Crayon',
