@@ -78,7 +78,7 @@ function setupDoodleHandlers() {
     doodlePad.onComplete = async (textureDataUrl) => {
         try {
             // Join the multiplayer session with custom sprite
-            const playerId = await multiplayer.join(pendingPlayerName);
+            const playerId = await multiplayer.join(pendingPlayerName, textureDataUrl);
 
             // Add local player to game with custom sprite
             game.addLocalPlayer(playerId, pendingPlayerName, textureDataUrl);
@@ -125,9 +125,9 @@ function setupGameHandlers() {
 // MULTIPLAYER HANDLERS
 // ─────────────────────────────────────────────────────────────────────────────
 function setupMultiplayerHandlers() {
-    // Player joins
-    multiplayer.onPlayerJoin = (id, name, x, y) => {
-        game.addRemotePlayer(id, name, x, y);
+    // Player joins (with sprite data)
+    multiplayer.onPlayerJoin = (id, name, x, y, spriteDataUrl) => {
+        game.addRemotePlayer(id, name, x, y, spriteDataUrl);
         checkGameStart();
     };
 

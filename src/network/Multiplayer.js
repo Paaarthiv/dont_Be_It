@@ -11,6 +11,7 @@ export class Multiplayer {
         this.channel = null;
         this.localPlayerId = null;
         this.localPlayerName = null;
+        this.localSpriteDataUrl = null;
         this.isHost = false;
 
         // Callbacks
@@ -26,9 +27,10 @@ export class Multiplayer {
     // ─────────────────────────────────────────────────────────────────────────────
     // CONNECTION
     // ─────────────────────────────────────────────────────────────────────────────
-    async join(playerName) {
+    async join(playerName, spriteDataUrl = null) {
         this.localPlayerId = crypto.randomUUID();
         this.localPlayerName = playerName;
+        this.localSpriteDataUrl = spriteDataUrl;
 
         // Create Realtime channel
         this.channel = supabase.channel(CHANNEL_NAME, {
@@ -72,12 +74,13 @@ export class Multiplayer {
         // Subscribe to channel
         await this.channel.subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                // Track presence
+                // Track presence with sprite data
                 await this.channel.track({
                     id: this.localPlayerId,
                     name: playerName,
                     x: 400,
                     y: 300,
+                    sprite: spriteDataUrl, // Send sprite with presence
                     joinedAt: Date.now()
                 });
             }
@@ -110,7 +113,8 @@ export class Multiplayer {
                     id: presence.id,
                     name: presence.name,
                     x: presence.x || 400,
-                    y: presence.y || 300
+                    y: presence.y || 300,
+                    sprite: presence.sprite || null
                 });
             }
         });
@@ -126,10 +130,10 @@ export class Multiplayer {
             this.isHost = sortedPlayers[0].id === this.localPlayerId;
         }
 
-        // Notify about all players
+        // Notify about all players (including sprite)
         players.forEach(player => {
             if (player.id !== this.localPlayerId && this.onPlayerJoin) {
-                this.onPlayerJoin(player.id, player.name, player.x, player.y);
+                this.onPlayerJoin(player.id, player.name, player.x, player.y, player.sprite);
             }
         });
     }
@@ -145,7 +149,8 @@ export class Multiplayer {
                 presence.id,
                 presence.name,
                 presence.x || 400,
-                presence.y || 300
+                presence.y || 300,
+                presence.sprite || null
             );
         }
     }
