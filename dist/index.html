@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tag Arena - Real-time Multiplayer</title>
+  <meta name="description" content="Fast-paced multiplayer tag game. Be the fastest. Don't be IT.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Russo+One&display=swap"
+    rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23FF2A00'/></svg>">
+
+  <script type="module" crossorigin src="/assets/index-CWn2wd_M.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-zmraKlYA.css">
+</head>
+
+<body>
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- GAME CANVAS (Layer 0-3: Background, Arena, Players, IT) -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- LANDING SCREEN - Name Entry -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="landing" class="overlay active">
+    <div class="landing-content">
+      <h1 class="game-title">TAG ARENA</h1>
+      <p class="tagline">Don't be IT</p>
+
+      <div class="input-group">
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="15" autocomplete="off" autofocus>
+        <span class="input-error" id="nameError">Name already taken!</span>
+      </div>
+
+      <button id="playButton" class="play-btn hidden">
+        PLAY <span class="arrow">▶</span>
+      </button>
+
+      <p class="player-count" id="playerCount">0 players online</p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- GAME HUD (Layer 4) -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="hud" class="overlay hidden">
+    <!-- Timer - Top Center -->
+    <div class="timer-container">
+      <span class="timer-label">TIME</span>
+      <span class="timer-value" id="roundTimer">1:30</span>
+    </div>
+
+    <!-- Loserboard - Top Right -->
+    <div class="loserboard-container" id="loserboard">
+      <h3 class="loserboard-header">LOSERBOARD</h3>
+      <ul class="loserboard-list" id="loserboardList">
+        <!-- Populated dynamically -->
+      </ul>
+    </div>
+
+    <!-- Controls Hint - Bottom -->
+    <div class="controls-hint">
+      <span>WASD / Arrows to move</span>
+      <span class="divider">|</span>
+      <span>SPACE to boost (IT only)</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- ALERTS (Layer 5) - "YOU ARE IT!" -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="alertOverlay" class="overlay alert-overlay hidden">
+    <div class="alert-flash" id="alertFlash"></div>
+    <div class="alert-text" id="alertText">YOU ARE IT!</div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- RESULT SCREEN - Game Over -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="resultScreen" class="overlay hidden">
+    <div class="result-modal">
+      <h2 class="result-header">ROUND OVER</h2>
+      <div class="result-loser">
+        <span class="skull">💀</span>
+        <span class="loser-label">THE LOSER IS</span>
+        <span class="loser-name" id="loserName">PlayerName</span>
+      </div>
+      <div class="result-stat">
+        Time as IT: <span id="loserTime">0.0</span>s
+      </div>
+      <button id="playAgainButton" class="play-btn">
+        RUN IT BACK <span class="arrow">▶</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- WAITING SCREEN - Waiting for players -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="waitingScreen" class="overlay hidden">
+    <div class="waiting-content">
+      <h2>WAITING FOR PLAYERS</h2>
+      <p class="waiting-count"><span id="currentPlayers">1</span>/5 players</p>
+      <div class="waiting-dots">
+        <span>.</span><span>.</span><span>.</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
